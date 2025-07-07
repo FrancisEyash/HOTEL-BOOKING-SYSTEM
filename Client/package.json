@@ -12,9 +12,18 @@
   "dependencies": {
     "@clerk/clerk-react": "^5.32.4",
     "@tailwindcss/vite": "^4.1.11",
+    "axios": "^1.10.0",
+    "cloudinary": "^2.7.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.0.1",
+    "express": "^5.1.0",
+    "mongoose": "^8.16.1",
+    "nodemailer": "^7.0.5",
+    "nodemon": "^3.1.10",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.6.3",
+    "stripe": "^18.3.0",
     "tailwindcss": "^4.1.11"
   },
   "devDependencies": {
