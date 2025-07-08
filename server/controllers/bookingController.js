@@ -1,3 +1,4 @@
+import transporter from "../configs/nodemailer.js";
 import Booking from "../models/Booking.js";
 import Hotel from "../models/Hotel.js";
 import Room from "../models/Room.js";
@@ -66,12 +67,80 @@ export const createBooking = async (req, res) => {
     const booking = await Booking.create({
       user,
       room,
-      hotel: roomData._id,
+      hotel: roomData.hotel._id,
       guests: +guests,
       checkInDate,
       checkOutDate,
       totalPrice,
     });
+
+    // Let's send the email
+    const mailOptions = {
+      from: `"Hotel Booking System" <${process.env.SMTP_USER}>`,
+      to: req.user.email,
+      subject: `Booking Confirmation - ${roomData.hotel.name}`,
+      html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+          <style>
+              body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+              .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+              .header { background-color: #f8f9fa; padding: 20px; border-radius: 5px; }
+              .booking-details { background-color: #fff; border: 1px solid #ddd; padding: 20px; margin: 20px 0; border-radius: 5px; }
+              ul { list-style: none; padding: 0; }
+              li { padding: 8px 0; border-bottom: 1px solid #eee; }
+              .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; color: #666; }
+          </style>
+      </head>
+      <body>
+          <div class="container">
+              <div class="header">
+                  <h2>🏨 Booking Confirmation</h2>
+              </div>
+              
+              <p>Dear ${req.user.username || "Valued Guest"},</p>
+              <p>Thank you for your booking! Here are your confirmation details:</p>
+              
+              <div class="booking-details">
+                  <h3>Booking Information</h3>
+                  <ul>
+                      <li><strong>Booking ID:</strong> ${booking._id}</li>
+                      <li><strong>Hotel Name:</strong> ${
+                        roomData.hotel.name
+                      }</li>
+                      <li><strong>Room Type:</strong> ${roomData.roomType}</li>
+                      <li><strong>Location:</strong> ${
+                        roomData.hotel.address
+                      }, ${roomData.hotel.city}</li>
+                      <li><strong>Check-in Date:</strong> ${booking.checkInDate.toDateString()}</li>
+                      <li><strong>Check-out Date:</strong> ${booking.checkOutDate.toDateString()}</li>
+                      <li><strong>Number of Guests:</strong> ${
+                        booking.guests
+                      }</li>
+                      <li><strong>Total Amount:</strong> ${
+                        process.env.CURRENCY || "$"
+                      }${booking.totalPrice}</li>
+                      <li><strong>Payment Status:</strong> ${
+                        booking.isPaid ? "Paid" : "Pay at Hotel"
+                      }</li>
+                  </ul>
+              </div>
+              
+              <p>We look forward to welcoming you!</p>
+              <p>If you need to make any changes to your booking, please contact us as soon as possible.</p>
+              
+              <div class="footer">
+                  <p><strong>Important:</strong> Please arrive with a valid ID and this confirmation email.</p>
+                  <p>Thank you for choosing ${roomData.hotel.name}!</p>
+              </div>
+          </div>
+      </body>
+      </html>
+  `,
+    };
+
+    await transporter.sendMail(mailOptions);
 
     res.json({ success: true, message: "Booking created successfully" });
   } catch (error) {
@@ -97,7 +166,7 @@ export const getUserBookings = async (req, res) => {
 
 export const getHotelBookings = async (req, res) => {
   try {
-    const hotel = await Hotel.findOne({ owner: req.auth.userId });
+    const hotel = await Hotel.findOne({ owner: req.auth().userId });
     if (!hotel) {
       return res.json({ success: false, message: "No Hotel found" });
     }
