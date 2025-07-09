@@ -9,6 +9,7 @@ import hotelRouter from "./routes/hotelRoutes.js";
 import connectCloudinary from "./configs/cloudinary.js";
 import roomRouter from "./routes/roomRoutes.js";
 import bookingRouter from "./routes/bookingRoutes.js";
+import { stripeWebhooks } from "./controllers/stripeWebhooks.js";
 
 connectDB();
 connectCloudinary();
@@ -18,6 +19,13 @@ const PORT = process.env.PORT_SERVER || 3000;
 
 // API to listen to Clerk Webhooks
 app.post("/api/clerk", clerkWebhooks);
+
+// API to listen to Stripe Webhooks
+app.post(
+  "/api/stripe",
+  express.raw({ type: "application/json" }),
+  stripeWebhooks
+);
 
 // MIDDLEWARE
 app.use(express.json());

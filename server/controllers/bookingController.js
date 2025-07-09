@@ -1,4 +1,3 @@
-import { url } from "inspector";
 import transporter from "../configs/nodemailer.js";
 import Booking from "../models/Booking.js";
 import Hotel from "../models/Hotel.js";
@@ -221,7 +220,7 @@ export const stripePayment = async (req, res) => {
     const session = await stripeInstance.checkout.sessions.create({
       line_items,
       mode: "payment",
-      success_url: `{origin}/loader/my-bookings`,
+      success_url: `${origin}/loader/my-bookings`,
       cancel_url: `${origin}/my-bookings`,
       metadata: {
         bookingId,
